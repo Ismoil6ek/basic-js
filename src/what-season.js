@@ -15,9 +15,18 @@ const seasonMonths = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer'
  */
 function getSeason(date) {
 
-    if (Date.parse(date) === NaN) {
-        throw new AssertionError('Invalid date!');
-    } else return seasonMonths[date.getMonth()];
+    // check for valid input
+    if (!date) {
+        return "Unable to determine the time of year!"
+    };
+
+    // check for valid date
+    if (!(date instanceof Date) || (Object.getOwnPropertyNames(date).length > 0)) {
+        throw Error("Invalid date!");
+    }
+
+    // main logic
+    return seasonMonths[date.getMonth()];
 }
 
 module.exports = {

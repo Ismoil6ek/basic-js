@@ -14,27 +14,40 @@ const { NotImplementedError } = require('../extensions/index.js');
  * 
  */
 function transform(arr) {
-    if (!Array.isArray(arr)) throw new Error("'arr' parameter must be an instance of the Array!");
+    if (!Array.isArray(arr)) {
+        throw new Error("'arr' parameter must be an instance of the Array!")
+    }
+    let result = JSON.parse(JSON.stringify(arr));
 
-    let transformedArray = [];
-
-    for (let i = 0; i < arr.length; i++) {
-        if (arr[i] == '--discard-next') {
-            if (arr[i + 1] !== undefined) i++;
-            if (typeof arr[i + 1] === 'string') i++;
-        } else if (arr[i] == '--discard-prev') {
-            if (arr[i - 1] !== undefined) transformedArray.pop();
-        } else if (arr[i] == '--double-next') {
-            if (arr[i + 1] !== undefined) transformedArray.push(arr[i + 1]);
-            if (typeof arr[i + 1] === 'string') i++;
-        } else if (arr[i] == '--double-prev') {
-            if (arr[i - 1] !== undefined) transformedArray.push(transformedArray[transformedArray.length - 1]);
+    for (let i = 0; i <= result.length; i++) {
+        if (i === 0 && (result[i] === "--discard-prev" || result[i] === "--double-prev")) {
+            result.splice(i, 1);
+            //If there is no element next to the control sequence to which it can be applied in
+            // the initial array, or this element was !!!previously deleted, it does nothing.
+        } else if (arr[i] === "--discard-next" && (result[i] === "--double-prev" || result[i] === "--discard-prev")) {
+            result.splice(i, 1);
+        } else if (i === arr.length - 1 && result[i] === "--double-next") {
+            result.splice(i, 1);
         } else {
-            transformedArray.push(arr[i])
+            switch (result[i]) {
+                case ("--discard-next"):
+                    result.splice(i, 2);
+                    i = i - 1;
+                    break;
+                case ("--discard-prev"):
+                    result.splice(i - 1, 2);
+                    i = i - 1;
+                    break;
+                case ("--double-prev"):
+                    result.splice(i, 1, result[i - 1]);
+                    break;
+                case ("--double-next"):
+                    result.splice(i, 1, result[i + 1]);
+                    break;
+            }
         }
     }
-
-    return transformedArray;
+    return result
 }
 
 module.exports = {
